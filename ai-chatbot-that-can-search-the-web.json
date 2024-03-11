@@ -1,0 +1,207 @@
+{
+    "id": "3tTCy5OOvtcJXpZ5",
+    "meta": {
+      "instanceId": "ec7a5f4ffdb34436e59d23eaccb5015b5238de2a877e205b28572bf1ffecfe04"
+    },
+    "name": "Chatbot with internet access",
+    "tags": [],
+    "nodes": [
+      {
+        "id": "64419b72-401d-4ae1-b095-876537991e7d",
+        "name": "On new manual Chat Message",
+        "type": "@n8n/n8n-nodes-langchain.manualChatTrigger",
+        "position": [
+          2100,
+          1260
+        ],
+        "parameters": {},
+        "typeVersion": 1
+      },
+      {
+        "id": "309b5969-da9c-4ad3-9131-00d0aa62d880",
+        "name": "Chat OpenAI",
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "position": [
+          2200,
+          1580
+        ],
+        "parameters": {
+          "model": "gpt-3.5-turbo-16k",
+          "options": {
+            "temperature": 0.3
+          }
+        },
+        "credentials": {
+          "openAiApi": {
+            "id": "wJtZwsVKW5v6R2Iy",
+            "name": "OpenAi account 2"
+          }
+        },
+        "typeVersion": 1
+      },
+      {
+        "id": "9229ebe6-8dec-4cec-b005-8c8f335e9406",
+        "name": "SerpAPI",
+        "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
+        "position": [
+          2740,
+          1620
+        ],
+        "parameters": {
+          "options": {}
+        },
+        "credentials": {
+          "serpApi": {
+            "id": "6s6leouy0rv1jCTZ",
+            "name": "SerpAPI account"
+          }
+        },
+        "typeVersion": 1
+      },
+      {
+        "id": "837b5813-7db5-40fc-b75a-201e0cd98dde",
+        "name": "Window Buffer Memory",
+        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+        "position": [
+          2460,
+          1620
+        ],
+        "parameters": {
+          "contextWindowLength": 20
+        },
+        "typeVersion": 1
+      },
+      {
+        "id": "77edfbb7-6ef0-4933-ad57-e7dfd27fcdab",
+        "name": "Agent",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "position": [
+          2400,
+          1260
+        ],
+        "parameters": {
+          "options": {}
+        },
+        "typeVersion": 1
+      },
+      {
+        "id": "7d1ab08f-0700-4f9b-918e-e3f154e9cf0d",
+        "name": "Wikipedia",
+        "type": "@n8n/n8n-nodes-langchain.toolWikipedia",
+        "position": [
+          2840,
+          1620
+        ],
+        "parameters": {},
+        "typeVersion": 1
+      },
+      {
+        "id": "cf7cba24-4967-4f08-8dc6-aa85a5b56506",
+        "name": "Sticky Note",
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          2320,
+          1187
+        ],
+        "parameters": {
+          "width": 422,
+          "height": 211,
+          "content": "### Conversational agent will utilise available tools to answer the prompt. "
+        },
+        "typeVersion": 1
+      },
+      {
+        "id": "d038d6b2-d6eb-4eb4-ab73-144f009f1afd",
+        "name": "Sticky Note1",
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          2700,
+          1560
+        ],
+        "parameters": {
+          "width": 300,
+          "height": 185,
+          "content": "### Tools which agent can use to accomplish the task"
+        },
+        "typeVersion": 1
+      },
+      {
+        "id": "38b5b8db-c062-4c08-8604-8a3dd71c7075",
+        "name": "Sticky Note2",
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          2360,
+          1560
+        ],
+        "parameters": {
+          "width": 300,
+          "height": 185,
+          "content": "### The conversation history(last 20 messages) is stored in a buffer memory"
+        },
+        "typeVersion": 1
+      }
+    ],
+    "active": false,
+    "pinData": {},
+    "settings": {
+      "executionOrder": "v1"
+    },
+    "versionId": "10aabfea-d235-4450-885f-26e56583e583",
+    "connections": {
+      "SerpAPI": {
+        "ai_tool": [
+          [
+            {
+              "node": "Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wikipedia": {
+        "ai_tool": [
+          [
+            {
+              "node": "Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Chat OpenAI": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Window Buffer Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "Agent",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "On new manual Chat Message": {
+        "main": [
+          [
+            {
+              "node": "Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  }

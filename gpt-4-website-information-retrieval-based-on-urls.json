@@ -1,0 +1,373 @@
+{
+    "name": "GPT-4: Website Information Retrieval Based On URLs",
+    "nodes": [
+      {
+        "id": "2316b92b-bd55-4d99-9d2f-896e0d8d7780",
+        "name": "Merge",
+        "type": "n8n-nodes-base.merge",
+        "position": [
+          2760,
+          760
+        ],
+        "parameters": {
+          "mode": "combine",
+          "options": {},
+          "combinationMode": "mergeByPosition"
+        },
+        "typeVersion": 2
+      },
+      {
+        "id": "ef07a62c-0d9f-4479-a386-9655b757f88e",
+        "name": "Clean Content",
+        "type": "n8n-nodes-base.code",
+        "position": [
+          1900,
+          980
+        ],
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "if ($input.item.json.body){\n\n$input.item.json.content = $input.item.json.body.replaceAll('/^\\s+|\\s+$/g', '').replace('/(\\r\\n|\\n|\\r)/gm', \"\").replace(/\\s+/g, ' ')\n\n  $input.item.json.contentShort = $input.item.json.content.slice(0, 10000)\n}\n\nreturn $input.item"
+        },
+        "executeOnce": false,
+        "typeVersion": 1,
+        "continueOnFail": true,
+        "alwaysOutputData": true
+      },
+      {
+        "id": "af4697ff-945c-4544-94e6-162cf264ec38",
+        "name": "Update Google Sheets",
+        "type": "n8n-nodes-base.googleSheets",
+        "position": [
+          2980,
+          1020
+        ],
+        "parameters": {
+          "options": {},
+          "fieldsUi": {
+            "values": [
+              {
+                "column": "Description",
+                "fieldValue": "={{ $json[\"description\"] }}"
+              }
+            ]
+          },
+          "operation": "update",
+          "sheetName": {
+            "__rl": true,
+            "mode": "list",
+            "value": "gid=0",
+            "cachedResultUrl": "",
+            "cachedResultName": "Sheet1"
+          },
+          "documentId": {
+            "__rl": true,
+            "mode": "url",
+            "value": "",
+            "__regex": ""
+          },
+          "valueToMatchOn": "={{ $json[\"url\"] }}",
+          "columnToMatchOn": "url"
+        },
+        "typeVersion": 3
+      },
+      {
+        "id": "cdf0b704-e993-452a-a3ea-9129cac297f0",
+        "name": "Split in Batches",
+        "type": "n8n-nodes-base.splitInBatches",
+        "position": [
+          1180,
+          940
+        ],
+        "parameters": {
+          "options": {},
+          "batchSize": 10
+        },
+        "typeVersion": 3
+      },
+      {
+        "id": "5182be81-2cc5-4a6b-86ee-9ce8185e32f2",
+        "name": "Sticky Note",
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          700,
+          760
+        ],
+        "parameters": {
+          "width": 267.0573725896398,
+          "height": 328.58824459698667,
+          "content": "## Retrieve URL data \n"
+        },
+        "typeVersion": 1
+      },
+      {
+        "id": "b9b5311e-a216-411a-906e-78fba27b54ce",
+        "name": "Sticky Note1",
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          1500,
+          820
+        ],
+        "parameters": {
+          "width": 579.2578255470221,
+          "height": 328.58824459698667,
+          "content": "## Retrieve Website Data & Extract HTML\n\n1. Get Data via HTTP Request\n2. Extract HTML\n3. Clean Data \n"
+        },
+        "typeVersion": 1
+      },
+      {
+        "id": "c28c5eaa-38a1-4213-991f-666d3c8da8dc",
+        "name": "Sticky Note2",
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          2120,
+          820
+        ],
+        "parameters": {
+          "width": 233.75599094085192,
+          "height": 328.58824459698667,
+          "content": "## Ask Open AI for a description\n"
+        },
+        "typeVersion": 1
+      },
+      {
+        "id": "442ecde0-de1d-4bc7-ba2a-7a08ac452bed",
+        "name": "Manual Trigger",
+        "type": "n8n-nodes-base.manualTrigger",
+        "position": [
+          420,
+          880
+        ],
+        "parameters": {},
+        "typeVersion": 1
+      },
+      {
+        "id": "c9d05411-5ed4-47d4-86c2-1a5eb6d908bd",
+        "name": "Retrieve URLs",
+        "type": "n8n-nodes-base.googleSheets",
+        "position": [
+          780,
+          880
+        ],
+        "parameters": {
+          "sheetName": {
+            "__rl": true,
+            "mode": "list",
+            "value": ""
+          },
+          "documentId": {
+            "__rl": true,
+            "mode": "list",
+            "value": ""
+          }
+        },
+        "typeVersion": 4.2
+      },
+      {
+        "id": "55d6720e-0f21-41f3-b65a-684e55a6aeb9",
+        "name": "Request HTML Data",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          1560,
+          980
+        ],
+        "parameters": {
+          "url": "=https://www.{{ $json.url }}",
+          "options": {
+            "redirect": {
+              "redirect": {
+                "followRedirects": true
+              }
+            }
+          }
+        },
+        "typeVersion": 3,
+        "continueOnFail": true
+      },
+      {
+        "id": "fdbce283-9009-4479-9a49-b3adb373a50d",
+        "name": "Cut out the body",
+        "type": "n8n-nodes-base.htmlExtract",
+        "position": [
+          1740,
+          980
+        ],
+        "parameters": {
+          "options": {
+            "trimValues": false
+          },
+          "extractionValues": {
+            "values": [
+              {
+                "key": "body",
+                "cssSelector": "html"
+              }
+            ]
+          }
+        },
+        "typeVersion": 1,
+        "continueOnFail": true
+      },
+      {
+        "id": "e0765ce6-307e-42c9-9177-3ee6c950dfff",
+        "name": "Ask the AI",
+        "type": "n8n-nodes-base.openAi",
+        "position": [
+          2180,
+          980
+        ],
+        "parameters": {
+          "model": "gpt-4-turbo-preview",
+          "prompt": {
+            "messages": [
+              {
+                "role": "assistant",
+                "content": "Your Input is the HTML content of a website of a company.\nYour output should be a description of the services or products the company is offering.\nMake the Description maximum 2 sentences. Focus on the core description of what the company does."
+              },
+              {
+                "content": "=Website Content: {{ $json[\"contentShort\"] }}"
+              }
+            ]
+          },
+          "options": {},
+          "resource": "chat"
+        },
+        "typeVersion": 1,
+        "continueOnFail": true
+      },
+      {
+        "id": "a27e8286-452b-439c-b419-1257ca27753a",
+        "name": "Split Out the Description",
+        "type": "n8n-nodes-base.splitOut",
+        "position": [
+          2400,
+          980
+        ],
+        "parameters": {
+          "options": {
+            "destinationFieldName": "description"
+          },
+          "fieldToSplitOut": "message.content"
+        },
+        "typeVersion": 1
+      }
+    ],
+    "pinData": {},
+    "connections": {
+      "Merge": {
+        "main": [
+          [
+            {
+              "node": "Update Google Sheets",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Ask the AI": {
+        "main": [
+          [
+            {
+              "node": "Split Out the Description",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Clean Content": {
+        "main": [
+          [
+            {
+              "node": "Ask the AI",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Retrieve URLs": {
+        "main": [
+          [
+            {
+              "node": "Split in Batches",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Manual Trigger": {
+        "main": [
+          [
+            {
+              "node": "Retrieve URLs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Cut out the body": {
+        "main": [
+          [
+            {
+              "node": "Clean Content",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Split in Batches": {
+        "main": [
+          [],
+          [
+            {
+              "node": "Request HTML Data",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Request HTML Data": {
+        "main": [
+          [
+            {
+              "node": "Cut out the body",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update Google Sheets": {
+        "main": [
+          [
+            {
+              "node": "Split in Batches",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Split Out the Description": {
+        "main": [
+          [
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      }
+    }
+  }

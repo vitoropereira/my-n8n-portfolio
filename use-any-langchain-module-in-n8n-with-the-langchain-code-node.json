@@ -1,0 +1,166 @@
+{
+    "meta": {
+      "instanceId": "cb484ba7b742928a2048bf8829668bed5b5ad9787579adea888f05980292a4a7",
+      "templateCredsSetupCompleted": true
+    },
+    "nodes": [
+      {
+        "id": "bd15bdc0-a08a-4a03-a95f-530d9e883243",
+        "name": "Sticky Note7",
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          746,
+          570
+        ],
+        "parameters": {
+          "width": 328.41313484548044,
+          "height": 211.30313955500145,
+          "content": "Before executing, replace `YOUR_API_KEY` with an API key for searchapi.io"
+        },
+        "typeVersion": 1
+      },
+      {
+        "id": "b844ae02-f859-4eff-90e4-562b1a810ef5",
+        "name": "When clicking \"Execute Workflow\"",
+        "type": "n8n-nodes-base.manualTrigger",
+        "position": [
+          340,
+          640
+        ],
+        "parameters": {},
+        "typeVersion": 1
+      },
+      {
+        "id": "f0b52a82-9d0c-4f1e-b392-07bbabec3261",
+        "name": "Set YouTube video ID",
+        "type": "n8n-nodes-base.set",
+        "position": [
+          560,
+          640
+        ],
+        "parameters": {
+          "fields": {
+            "values": [
+              {
+                "name": "videoId",
+                "stringValue": "OsMVtuuwOXc"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "typeVersion": 3.2
+      },
+      {
+        "id": "1eff9f6c-9bcf-41dc-83f4-c3a828188cd3",
+        "name": "OpenAI Chat Model",
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "position": [
+          800,
+          820
+        ],
+        "parameters": {
+          "model": "gpt-3.5-turbo-16k",
+          "options": {
+            "temperature": 0.3
+          }
+        },
+        "credentials": {
+          "openAiApi": {
+            "id": "VQtv7frm7eLiEDnd",
+            "name": "OpenAi account 7"
+          }
+        },
+        "typeVersion": 1
+      },
+      {
+        "id": "4fa8b4b5-3397-4fc7-a4a4-4876c2a63b70",
+        "name": "LangChain Code",
+        "type": "@n8n/n8n-nodes-langchain.code",
+        "position": [
+          780,
+          640
+        ],
+        "parameters": {
+          "code": {
+            "execute": {
+              "code": "\n\n// IMPORTANT: add in your API key for searchapi.io below\nconst searchApiKey = \"gNspggsxvRYaykZSvs9QWcJb\"\n\n\n\n\n\nconst { loadSummarizationChain } = require(\"langchain/chains\");\nconst { SearchApiLoader } = require(\"langchain/document_loaders/web/searchapi\");\nconst { PromptTemplate } = require(\"langchain/prompts\");\nconst { TokenTextSplitter } = require(\"langchain/text_splitter\");\nconst loader = new SearchApiLoader({\n  engine: \"youtube_transcripts\",\n  video_id: $input.item.json.videoId,\n  apiKey: \"gNspggsxvRYaykZSvs9QWcJb\",\n});\n\nif (searchApiKey == \"<YOUR API KEY>\") {\n  throw new Error(\"Please add your API key for searchapi.io to this node\")\n}\n\nconst docs = await loader.load();\n\nconst splitter = new TokenTextSplitter({\n  chunkSize: 10000,\n  chunkOverlap: 250,\n});\n\nconst docsSummary = await splitter.splitDocuments(docs);\n\nconst llmSummary = await this.getInputConnectionData('ai_languageModel', 0);\n\nconst summaryTemplate = `\nYou are an expert in summarizing YouTube videos.\nYour goal is to create a summary of a podcast.\nBelow you find the transcript of a podcast:\n--------\n{text}\n--------\n\nThe transcript of the podcast will also be used as the basis for a question and answer bot.\nProvide some examples questions and answers that could be asked about the podcast. Make these questions very specific.\n\nTotal output will be a summary of the video and a list of example questions the user could ask of the video.\n\nSUMMARY AND QUESTIONS:\n`;\n\nconst SUMMARY_PROMPT = PromptTemplate.fromTemplate(summaryTemplate);\n\nconst summaryRefineTemplate = `\nYou are an expert in summarizing YouTube videos.\nYour goal is to create a summary of a podcast.\nWe have provided an existing summary up to a certain point: {existing_answer}\n\nBelow you find the transcript of a podcast:\n--------\n{text}\n--------\n\nGiven the new context, refine the summary and example questions.\nThe transcript of the podcast will also be used as the basis for a question and answer bot.\nProvide some examples questions and answers that could be asked about the podcast. Make\nthese questions very specific.\nIf the context isn't useful, return the original summary and questions.\nTotal output will be a summary of the video and a list of example questions the user could ask of the video.\n\nSUMMARY AND QUESTIONS:\n`;\n\nconst SUMMARY_REFINE_PROMPT = PromptTemplate.fromTemplate(\n  summaryRefineTemplate\n);\n\nconst summarizeChain = loadSummarizationChain(llmSummary, {\n  type: \"refine\",\n  verbose: true,\n  questionPrompt: SUMMARY_PROMPT,\n  refinePrompt: SUMMARY_REFINE_PROMPT,\n});\n\nconst summary = await summarizeChain.run(docsSummary);\n\nreturn [{json: { summary } } ];"
+            }
+          },
+          "inputs": {
+            "input": [
+              {
+                "type": "main",
+                "required": true,
+                "maxConnections": 1
+              },
+              {
+                "type": "ai_languageModel",
+                "required": true,
+                "maxConnections": 1
+              }
+            ]
+          },
+          "outputs": {
+            "output": [
+              {
+                "type": "main"
+              }
+            ]
+          }
+        },
+        "typeVersion": 1
+      },
+      {
+        "id": "46ae2414-2e68-4335-bbe0-456c3e60f68d",
+        "name": "Sticky Note",
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          20,
+          580
+        ],
+        "parameters": {
+          "color": 7,
+          "height": 220.82906011310624,
+          "content": "## About\nThis workflow shows how you can write LangChain code in n8n (and import its modules if required).\n\nThe workflow fetches a video from YouTube and produces a textual summary of it."
+        },
+        "typeVersion": 1
+      }
+    ],
+    "pinData": {},
+    "connections": {
+      "OpenAI Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "LangChain Code",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set YouTube video ID": {
+        "main": [
+          [
+            {
+              "node": "LangChain Code",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "When clicking \"Execute Workflow\"": {
+        "main": [
+          [
+            {
+              "node": "Set YouTube video ID",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  }
